@@ -1,0 +1,36 @@
+from flask.ext.sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+class Game(db.Model):
+    """Board game."""
+
+    __tablename__ = "games"
+    game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(20), nullable=False, unique=True)
+    description = db.Column(db.String(100))
+
+
+def connect_to_db(app, db_uri="postgresql:///games"):
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    db.app = app
+    db.init_app(app)
+
+
+def example_data():
+    """Create example data for the test database."""
+
+    chutes = Game(name='Chutes and Ladders', description="Go up ladders, fall down chutes")
+    checkers = Game(name='Checkers', description="Keep as many pieces on the board as possible")
+    chess = Game(name='Chess', description="Kill the king")
+
+    db.session.add_all([chutes, checkers, chess])
+    db.session.commit()
+
+
+if __name__ == '__main__':
+    from server import app
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    connect_to_db(app)
+    print "Connected to DB."
